@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Waste Bin Classifier (Prototype)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: 0; background: #f6f7f9; }
+    header { padding: 16px; background: #fff; border-bottom: 1px solid #e6e8ec; }
+    main { max-width: 720px; margin: 0 auto; padding: 16px; }
+    .card { background: #fff; border: 1px solid #e6e8ec; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    button { padding: 10px 14px; border-radius: 10px; border: 1px solid #d0d5dd; background: #fff; cursor: pointer; }
+    button.primary { background: #111827; color: #fff; border-color: #111827; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; border: 1px solid #d0d5dd; font-weight: 600; }
+    .muted { color: #667085; font-size: 14px; }
+    img.preview { max-width: 100%; border-radius: 10px; border: 1px solid #e6e8ec; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #0b1220; color: #e5e7eb; padding: 12px; border-radius: 10px; overflow: auto; }
+    .spinner { display: none; }
+    .spinner.show { display: inline-block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="max-width:720px;margin:0 auto;">
+      <strong>Waste Bin Classifier</strong>
+      <div class="muted">Prototype (Sprint 0): Upload a photo, get a bin recommendation.</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2 style="margin-top:0;">Which bin should this go in?</h2>
+      <div class="muted">One item per photo. JPG/PNG only for Sprint 0.</div>
+      <div style="height:12px;"></div>
+
+      <div class="row">
+        <input id="file" type="file" accept="image/*" capture="environment" />
+        <button id="btnUpload" class="primary" disabled>Analyze</button>
+        <span id="spin" class="spinner">Analyzing…</span>
+      </div>
+
+      <div style="height:12px;"></div>
+      <div id="previewWrap" style="display:none;">
+        <img id="preview" class="preview" alt="preview" />
+      </div>
+    </div>
+
+    <div id="resultCard" class="card" style="display:none;">
+      <h3 style="margin-top:0;">Result</h3>
+      <div id="binLine"></div>
+      <ul id="rationale"></ul>
+
+      <div id="clarifyWrap" style="display:none;">
+        <hr />
+        <div class="muted" style="margin-bottom:8px;">Clarification needed:</div>
+        <div id="clarifyQ" style="font-weight:600;margin-bottom:10px;"></div>
+        <div class="row">
+          <button id="btnYes">Yes</button>
+          <button id="btnNo">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="debugCard" class="card" style="display:none;">
+      <h3 style="margin-top:0;">Debug (raw JSON)</h3>
+      <pre id="debug"></pre>
+    </div>
+  </main>
+
+<script>
+  const API_BASE = "http://localhost:8000";
+  const fileEl = document.getElementById("file");
+  const btnUpload = document.getElementById("btnUpload");
+  const spin = document.getElementById("spin");
+  const previewWrap = document.getElementById("previewWrap");
+  const previewImg = document.getElementById("preview");
+
+  const resultCard = document.getElementById("resultCard");
+  const binLine = document.getElementById("binLine");
+  const rationaleUl = document.getElementById("rationale");
+  const clarifyWrap = document.getElementById("clarifyWrap");
+  const clarifyQ = document.getElementById("clarifyQ");
+  const btnYes = document.getElementById("btnYes");
+  const btnNo = document.getElementById("btnNo");
+
+  const debugCard = document.getElementById("debugCard");
+  const debugPre = document.getElementById("debug");
+
+  let lastResponse = null;
+
+  function setLoading(isLoading) {
+    btnUpload.disabled = isLoading || !fileEl.files?.length;
+    spin.className = isLoading ? "spinner show" : "spinner";
+  }
+
+  fileEl.addEventListener("change", () => {
+    const file = fileEl.files[0];
+    btnUpload.disabled = !file;
+    if (!file) return;
+
+    // Preview
+    const url = URL.createObjectURL(file);
+    previewImg.src = url;
+    previewWrap.style.display = "block";
+
+    // Reset results
+    resultCard.style.display = "none";
+    debugCard.style.display = "none";
+    lastResponse = null;
+  });
+
+  btnUpload.addEventListener("click", async () => {
+    const file = fileEl.files[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const form = new FormData();
+      form.append("image", file);
+      form.append("jurisdiction_id", "CA_DEFAULT");
+      //form.append("client_request_id", crypto.randomUUID());
+
+      const res = await fetch(`${API_BASE}/v1/classify`, { method: "POST", body: form });
+      const json = await res.json();
+      lastResponse = json;
+
+      renderResponse(json, res.ok ? null : `HTTP ${res.status}`);
+    } catch (e) {
+      renderError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  btnYes.addEventListener("click", () => submitClarification(true));
+  btnNo.addEventListener("click", () => submitClarification(false));
+
+  async function submitClarification(answer) {
+    if (!lastResponse?.clarification) return;
+
+    setLoading(true);
+    try {
+      const payload = {
+        request_id: lastResponse.request_id,
+        question_id: lastResponse.clarification.question_id,
+        answer,
+        top_labels: lastResponse.result?.top_labels || []
+      };
+
+      const res = await fetch(`${API_BASE}/v1/clarify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      lastResponse = json;
+      renderResponse(json, res.ok ? null : `HTTP ${res.status}`);
+    } catch (e) {
+      renderError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function renderError(msg) {
+    resultCard.style.display = "block";
+    binLine.innerHTML = `<span class="badge">ERROR</span> <span class="muted">${escapeHtml(msg)}</span>`;
+    rationaleUl.innerHTML = "";
+    clarifyWrap.style.display = "none";
+    debugCard.style.display = "none";
+  }
+
+  function renderResponse(json, httpError) {
+    resultCard.style.display = "block";
+    debugCard.style.display = "block";
+    debugPre.textContent = JSON.stringify(json, null, 2);
+
+    if (httpError) {
+      binLine.innerHTML = `<span class="badge">ERROR</span> <span class="muted">${escapeHtml(httpError)}</span>`;
+      rationaleUl.innerHTML = `<li class="muted">${escapeHtml(json?.error?.message || "Request failed")}</li>`;
+      clarifyWrap.style.display = "none";
+      return;
+    }
+
+    const r = json.result;
+    binLine.innerHTML = `<span class="badge">${escapeHtml(r.bin)}</span> <strong>${escapeHtml(r.bin_label)}</strong>
+      <span class="muted"> — Confidence: ${escapeHtml(r.confidence)} (${Number(r.confidence_score).toFixed(2)})</span>`;
+
+    rationaleUl.innerHTML = "";
+    (r.rationale || []).forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = `${item.type}: ${item.text}`;
+      rationaleUl.appendChild(li);
+    });
+
+    if (json.needs_clarification && json.clarification) {
+      clarifyWrap.style.display = "block";
+      clarifyQ.textContent = json.clarification.question_text;
+    } else {
+      clarifyWrap.style.display = "none";
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+</script>
+</body>
+</html>
+
