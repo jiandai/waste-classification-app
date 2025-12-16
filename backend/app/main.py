@@ -16,7 +16,7 @@ from PIL import Image
 
 from .schemas import ClassifyResponse, ErrorBody, LabelScore
 from .vision_provider import get_provider
-from .rules import decide_bin_from_labels, apply_clarification
+from .rules import decide_bin_from_profile, decide_bin_from_labels, apply_clarification
 
 
 MAX_BYTES = 8 * 1024 * 1024  # 8MB
@@ -74,16 +74,14 @@ async def classify(
     normalized = _normalize_image(raw, image.content_type)
 
     provider = get_provider()
-    #labels = provider.detect_labels(normalized)
-    #labels = await provider.detect_labels(normalized, mime_type="image/jpeg")
     try:
-        labels = await provider.detect_labels(normalized, mime_type="image/jpeg")
+        # Use new ItemProfile-based flow
+        profile = await provider.detect_item_profile(normalized, mime_type="image/jpeg")
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Vision provider error: {e}")
 
-
-    result, needs_clarification, clarification, special_handling = decide_bin_from_labels(
-        labels=labels,
+    result, needs_clarification, clarification, special_handling = decide_bin_from_profile(
+        profile=profile,
         jurisdiction_id=jurisdiction_id
     )
 

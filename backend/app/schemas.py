@@ -11,6 +11,40 @@ class LabelScore(BaseModel):
     score: float = Field(ge=0.0, le=1.0)
 
 
+class ItemProfile(BaseModel):
+    """
+    Stable intermediate representation for waste classification.
+    Normalizes vision outputs into decision-oriented attributes.
+    """
+    material: Literal[
+        "paper_cardboard",
+        "rigid_plastic",
+        "film_plastic",
+        "metal",
+        "glass",
+        "organic",
+        "textile",
+        "unknown"
+    ]
+    form_factor: Literal[
+        "bottle",
+        "can",
+        "box",
+        "bag_film",
+        "cup",
+        "tray",
+        "utensil",
+        "sheet",
+        "mixed",
+        "unknown"
+    ]
+    contamination_risk: Literal["low", "medium", "high", "unknown"]
+    special_handling: Literal["battery", "e_waste", "hhw", "sharps", "none"]
+    confidence: float = Field(ge=0.0, le=1.0, description="Overall confidence in the classification")
+    # Keep raw labels for debugging
+    raw_labels: Optional[List[LabelScore]] = Field(default=None, description="Original vision model labels for debugging")
+
+
 class RationaleItem(BaseModel):
     type: Literal["DETECTED_ITEM", "RULE", "USER_INPUT", "SAFETY", "SYSTEM"]
     text: str
