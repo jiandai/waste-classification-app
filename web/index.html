@@ -70,7 +70,20 @@
   </main>
 
 <script>
-  const API_BASE = "http://localhost:8000";
+  function getApiBase() {
+    // Allow overriding in the URL for quick testing, e.g.
+    //   http://10.0.0.230:8080/?apiBase=http://10.0.0.230:8000
+    const params = new URLSearchParams(window.location.search);
+    const override = params.get("apiBase");
+    if (override) return override.replace(/\/+$/, "");
+
+    // Default to "same host as the web page, but port 8000" so LAN devices
+    // call the host machine instead of their own localhost.
+    const host = window.location.hostname || "localhost";
+    return `http://${host}:8000`;
+  }
+
+  const API_BASE = getApiBase();
   const fileEl = document.getElementById("file");
   const btnUpload = document.getElementById("btnUpload");
   const spin = document.getElementById("spin");
