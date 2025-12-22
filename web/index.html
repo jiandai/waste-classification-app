@@ -79,7 +79,10 @@
 
     // Default to "same host as the web page, but port 8000" so LAN devices
     // call the host machine instead of their own localhost.
-    const host = window.location.hostname || "localhost";
+    let host = window.location.hostname || "localhost";
+    if (host.includes(":")) {
+      host = `[${host}]`;
+    }
     return `http://${host}:8000`;
   }
 
