@@ -99,19 +99,19 @@ OPENAI_MAX_RETRIES=2
 1. Start the backend server:
 ```bash
 cd backend
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --host 0.0.0.0 --reload --port 8000
 ```
 
 2. Serve the frontend:
 ```bash
 # In a new terminal
 cd web
-python -m http.server 8080
+python -m http.server 8080 --bind 0.0.0.0
 ```
 
 3. Open your browser and navigate to:
 ```
-http://localhost:8080
+http://[SERVER_URL]:8080
 ```
 
 ### Testing
@@ -128,7 +128,7 @@ To test with stub mode, simply upload any image. The stub provider generates det
 ### Classify Image
 
 ```bash
-curl -X POST http://localhost:8000/v1/classify \
+curl -X POST http://[SERVER_URL]:8000/v1/classify \
   -F "image=@photo.jpg" \
   -F "jurisdiction_id=CA_DEFAULT"
 ```
@@ -164,7 +164,7 @@ Response:
 ### Submit Clarification
 
 ```bash
-curl -X POST http://localhost:8000/v1/clarify \
+curl -X POST http://[SERVER_URL]:8000/v1/clarify \
   -H "Content-Type: application/json" \
   -d '{
     "request_id": "req_abc123",
