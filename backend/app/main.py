@@ -1,5 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
+import logging
+import os
 from dotenv import load_dotenv
 ENV_PATH = Path(__file__).resolve().parents[0] / ".env"
 load_dotenv(dotenv_path=ENV_PATH, override=False)
@@ -8,9 +10,12 @@ import io
 import uuid
 from typing import Optional, List
 
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from PIL import Image
 
@@ -24,6 +29,7 @@ ALLOWED_MIME = {"image/jpeg", "image/png"}  # Sprint 0: keep minimal
 
 
 app = FastAPI(title="Waste CV Prototype API", version="0.1.0")
+logger = logging.getLogger("waste_app")
 
 # Local testing convenience (tighten later)
 app.add_middleware(
@@ -33,6 +39,46 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def log_provider_config() -> None:
+    provider = os.getenv("VISION_PROVIDER", "stub").strip().lower()
+    logger.info("VISION_PROVIDER=%s", provider)
+    if provider == "openai":
+        logger.info("OPENAI_MODEL=%s", os.getenv("OPENAI_MODEL", "unset"))
+
+
+def _error_body(message: str, status_code: int, error_type: str, details: Optional[dict] = None) -> dict:
+    body = {
+        "request_id": f"req_{uuid.uuid4().hex[:12]}",
+        "error": {
+            "message": message,
+            "code": status_code,
+            "type": error_type,
+        },
+    }
+    if details:
+        body["error"]["details"] = details
+    return body
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    body = _error_body(str(exc.detail), exc.status_code, "http_error")
+    return JSONResponse(status_code=exc.status_code, content=body)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    body = _error_body("Validation error", 422, "validation_error", {"errors": exc.errors()})
+    return JSONResponse(status_code=422, content=body)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled exception")
+    body = _error_body("Internal server error", 500, "internal_error")
+    return JSONResponse(status_code=500, content=body)
 
 
 @app.get("/health")
@@ -119,4 +165,3 @@ def clarify(payload: ClarifyRequest):
         clarification=None,
         special_handling=None
     )
-
