@@ -136,7 +136,7 @@ async def classify(
     client_request_id: Optional[str] = Form(None),
     locale: Optional[str] = Form(None),
 ):
-    request_id = request.state.request_id
+    request_id = getattr(request.state, "request_id", f"req_{uuid.uuid4().hex[:12]}")
 
     if image.content_type not in ALLOWED_MIME:
         raise HTTPException(status_code=415, detail=f"Unsupported media type: {image.content_type}. Use JPG or PNG for Sprint 0.")
