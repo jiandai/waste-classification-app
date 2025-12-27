@@ -11,6 +11,7 @@ import uuid
 from typing import Optional, List
 
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -95,7 +96,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     request_id = getattr(request.state, "request_id", None)
-    body = _error_body("Validation error", 422, "validation_error", request_id=request_id, details={"errors": exc.errors()})
+    body = _error_body("Validation error", 422, "validation_error", request_id=request_id, details={"errors": jsonable_encoder(exc.errors())})
     return JSONResponse(status_code=422, content=body)
 
 
