@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from PIL import Image
 
@@ -31,6 +32,15 @@ ALLOWED_MIME = {"image/jpeg", "image/png"}  # Sprint 0: keep minimal
 app = FastAPI(title="Waste CV Prototype API", version="0.1.0")
 logger = logging.getLogger("waste_app")
 
+
+class RequestIDMiddleware(BaseHTTPMiddleware):
+    """Middleware to generate and store request_id in request.state for tracing."""
+    async def dispatch(self, request: Request, call_next):
+        request.state.request_id = f"req_{uuid.uuid4().hex[:12]}"
+        response = await call_next(request)
+        return response
+
+
 # Local testing convenience (tighten later)
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +49,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# Add request ID middleware - it will run after CORS but before route handlers,
+# ensuring request_id is available for all endpoints and exception handlers
+app.add_middleware(RequestIDMiddleware)
 
 @app.on_event("startup")
 def log_provider_config() -> None:
@@ -48,9 +61,19 @@ def log_provider_config() -> None:
         logger.info("OPENAI_MODEL=%s", os.getenv("OPENAI_MODEL", "unset"))
 
 
-def _error_body(message: str, status_code: int, error_type: str, details: Optional[dict] = None) -> dict:
+def _error_body(message: str, status_code: int, error_type: str, request_id: Optional[str] = None, details: Optional[dict] = None) -> dict:
+    """
+    Generate error response body with request_id from request state if available.
+    
+    Args:
+        message: Error message
+        status_code: HTTP status code
+        error_type: Type of error (e.g., "http_error", "validation_error")
+        request_id: Request ID to use (from request.state). Falls back to generating a new one if None.
+        details: Optional error details dictionary
+    """
     body = {
-        "request_id": f"req_{uuid.uuid4().hex[:12]}",
+        "request_id": request_id or f"req_{uuid.uuid4().hex[:12]}",
         "error": {
             "message": message,
             "code": status_code,
@@ -64,20 +87,23 @@ def _error_body(message: str, status_code: int, error_type: str, details: Option
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    body = _error_body(str(exc.detail), exc.status_code, "http_error")
+    request_id = getattr(request.state, "request_id", None)
+    body = _error_body(str(exc.detail), exc.status_code, "http_error", request_id=request_id)
     return JSONResponse(status_code=exc.status_code, content=body)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    body = _error_body("Validation error", 422, "validation_error", {"errors": exc.errors()})
+    request_id = getattr(request.state, "request_id", None)
+    body = _error_body("Validation error", 422, "validation_error", request_id=request_id, details={"errors": exc.errors()})
     return JSONResponse(status_code=422, content=body)
 
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    logger.exception("Unhandled exception")
-    body = _error_body("Internal server error", 500, "internal_error")
+    request_id = getattr(request.state, "request_id", None)
+    logger.exception("Unhandled exception", extra={"request_id": request_id})
+    body = _error_body("Internal server error", 500, "internal_error", request_id=request_id)
     return JSONResponse(status_code=500, content=body)
 
 
@@ -103,12 +129,13 @@ def _normalize_image(image_bytes: bytes, mime: str) -> bytes:
 
 @app.post("/v1/classify", response_model=ClassifyResponse, responses={400: {"model": ErrorBody}, 413: {"model": ErrorBody}, 415: {"model": ErrorBody}})
 async def classify(
+    request: Request,
     image: UploadFile = File(...),
     jurisdiction_id: str = Form("CA_DEFAULT"),
     client_request_id: Optional[str] = Form(None),
     locale: Optional[str] = Form(None),
 ):
-    request_id = f"req_{uuid.uuid4().hex[:12]}"
+    request_id = request.state.request_id
 
     if image.content_type not in ALLOWED_MIME:
         raise HTTPException(status_code=415, detail=f"Unsupported media type: {image.content_type}. Use JPG or PNG for Sprint 0.")
@@ -150,8 +177,9 @@ class ClarifyRequest(BaseModel):
 
 
 @app.post("/v1/clarify", response_model=ClassifyResponse, responses={400: {"model": ErrorBody}})
-def clarify(payload: ClarifyRequest):
-    request_id = payload.request_id or f"req_{uuid.uuid4().hex[:12]}"
+def clarify(request: Request, payload: ClarifyRequest):
+    # Use request_id from payload if provided, otherwise use the one from request.state
+    request_id = payload.request_id or getattr(request.state, "request_id", f"req_{uuid.uuid4().hex[:12]}")
     jurisdiction_id = "CA_DEFAULT"
 
     prior = payload.top_labels or []
