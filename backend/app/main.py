@@ -16,7 +16,7 @@ from PIL import Image
 
 from .schemas import ClassifyResponse, ErrorBody, LabelScore
 from .vision_provider import get_provider
-from .rules import decide_bin_from_profile, decide_bin_from_labels, apply_clarification
+from .rules import decide_bin_from_profile, apply_clarification
 
 
 MAX_BYTES = 8 * 1024 * 1024  # 8MB
