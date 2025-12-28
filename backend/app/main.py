@@ -14,7 +14,7 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -122,6 +122,12 @@ async def root():
     if index_path.exists():
         return FileResponse(index_path)
     raise HTTPException(status_code=404, detail="Frontend index.html file not found. Ensure the web directory exists at the project root.")
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Return 204 No Content for favicon requests to avoid 404 errors in logs."""
+    return Response(status_code=204)
 
 
 @app.get("/health")
