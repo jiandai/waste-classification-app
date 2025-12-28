@@ -124,6 +124,37 @@ async def root():
     raise HTTPException(status_code=404, detail="Frontend index.html file not found. Ensure the web directory exists at the project root.")
 
 
+@app.get("/manifest.json")
+async def manifest():
+    """Serve the PWA manifest file."""
+    manifest_path = WEB_DIR / "manifest.json"
+    if manifest_path.exists():
+        return FileResponse(manifest_path, media_type="application/json")
+    raise HTTPException(status_code=404, detail="manifest.json not found")
+
+
+@app.get("/sw.js")
+async def service_worker():
+    """Serve the service worker file."""
+    sw_path = WEB_DIR / "sw.js"
+    if sw_path.exists():
+        return FileResponse(sw_path, media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="sw.js not found")
+
+
+@app.get("/icon-{size}.png")
+async def icon(size: str):
+    """Serve PWA icons."""
+    # Validate size parameter to prevent path traversal
+    if size not in ["192", "512"]:
+        raise HTTPException(status_code=404, detail="Icon size not found")
+    
+    icon_path = WEB_DIR / f"icon-{size}.png"
+    if icon_path.exists():
+        return FileResponse(icon_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail=f"icon-{size}.png not found")
+
+
 @app.get("/favicon.ico")
 async def favicon():
     """Return 204 No Content for favicon requests to avoid 404 errors in logs."""
