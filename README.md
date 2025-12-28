@@ -2,7 +2,7 @@
 
 An AI-powered waste classification system that uses computer vision to help users determine which bin (recycling, organics, trash, or special handling) their waste items belong to.
 
-**Status**: Stage 1 Phase 1 Complete - Backend and frontend unified into a single deployable service for simplified deployment.
+**Status**: Stage 1 Phase 3 Complete - Production-ready Docker deployment with secure environment variable configuration.
 
 ## Overview
 
@@ -84,10 +84,86 @@ Functional vanilla HTML/CSS/JavaScript interface served by the backend:
 
 ### Prerequisites
 
+**For Docker Deployment (Recommended for Production - Stage 1 Phase 3)**:
+- Docker installed on your system
+- OpenAI API key (optional, can use stub mode)
+
+**For Local Development**:
 - Python 3.9+
 - OpenAI API key (optional, can use stub mode)
 
-### Installation
+### Docker Deployment (Stage 1 Phase 3 - Production Ready)
+
+**Quick Start**:
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd waste-classification-app
+```
+
+2. Build the Docker image:
+```bash
+docker build -t waste-classification-app:latest .
+```
+
+3. Run the container:
+
+**For stub mode** (testing without API key):
+```bash
+docker run -p 8000:8000 waste-classification-app:latest
+```
+
+**For OpenAI mode** (production with API key):
+```bash
+docker run -p 8000:8000 \
+  -e VISION_PROVIDER=openai \
+  -e OPENAI_API_KEY=your-api-key-here \
+  -e OPENAI_MODEL=gpt-4o-mini \
+  waste-classification-app:latest
+```
+
+4. Open your browser to:
+```
+http://localhost:8000
+```
+
+**Environment Variables**:
+
+The application is configured via environment variables (not `.env` files) for production security:
+
+- `VISION_PROVIDER` - Set to `stub` for testing or `openai` for production (default: `stub`)
+- `OPENAI_API_KEY` - Your OpenAI API key (required when `VISION_PROVIDER=openai`)
+- `OPENAI_MODEL` - OpenAI model to use (default: `gpt-4o-mini`)
+- `OPENAI_TIMEOUT_SECONDS` - API timeout in seconds (default: `20`)
+- `OPENAI_MAX_RETRIES` - Max retry attempts (default: `2`)
+- `OPENAI_BASE_URL` - Optional override for OpenAI API base URL (for proxies)
+
+**Advanced Docker Options**:
+
+```bash
+# Run with all environment variables
+docker run -p 8000:8000 \
+  -e VISION_PROVIDER=openai \
+  -e OPENAI_API_KEY=sk-... \
+  -e OPENAI_MODEL=gpt-4o-mini \
+  -e OPENAI_TIMEOUT_SECONDS=30 \
+  -e OPENAI_MAX_RETRIES=3 \
+  waste-classification-app:latest
+
+# Run with environment file (create a .env file first)
+docker run -p 8000:8000 --env-file .env waste-classification-app:latest
+
+# Run in detached mode with automatic restart
+docker run -d --restart unless-stopped \
+  -p 8000:8000 \
+  -e VISION_PROVIDER=openai \
+  -e OPENAI_API_KEY=sk-... \
+  --name waste-classifier \
+  waste-classification-app:latest
+```
+
+### Local Development Installation
 
 1. Clone the repository:
 ```bash
@@ -106,24 +182,37 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r backend/requirements.txt
 ```
 
-4. Configure environment variables:
+4. Configure environment variables (Local Development Only):
 
-Create `backend/app/.env` file (optional - required for OpenAI mode):
-```env
-# Vision provider: "stub" for testing, "openai" for production
-VISION_PROVIDER=stub
+**For local development**, you can set environment variables in your shell:
 
-# OpenAI settings (only needed if VISION_PROVIDER=openai)
-OPENAI_API_KEY=your-api-key-here
-OPENAI_MODEL=gpt-4o-mini
-OPENAI_TIMEOUT_SECONDS=20
-OPENAI_MAX_RETRIES=2
+```bash
+# For stub mode (no API key needed)
+export VISION_PROVIDER=stub
 
-# Optional: Override OpenAI base URL (for proxies or custom endpoints)
-# OPENAI_BASE_URL=https://api.openai.com/v1
+# For OpenAI mode
+export VISION_PROVIDER=openai
+export OPENAI_API_KEY=your-api-key-here
+export OPENAI_MODEL=gpt-4o-mini
+export OPENAI_TIMEOUT_SECONDS=20
+export OPENAI_MAX_RETRIES=2
 ```
 
-**Note**: The application works without a `.env` file using stub mode by default.
+**Note**: Stage 1 Phase 3 removed support for `.env` files for production security. The application now reads environment variables directly from the system. For local development convenience, you can still create a `.env` file and source it manually:
+
+```bash
+# Create .env file (not committed to git)
+cat > .env << 'EOF'
+export VISION_PROVIDER=stub
+export OPENAI_API_KEY=your-api-key-here
+export OPENAI_MODEL=gpt-4o-mini
+EOF
+
+# Source it before running
+source .env
+```
+
+The application works in stub mode by default if no environment variables are set.
 
 ### Running the Application
 
@@ -166,6 +255,8 @@ python -m http.server 8080 --bind 0.0.0.0
 ```
 http://localhost:8080
 ```
+
+**Note**: This deployment mode is deprecated for production. Use the unified deployment or Docker instead.
 
 **Remote/Network Access**:
 
@@ -352,6 +443,14 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 
 ## Current Status
 
+### Stage 1 Phase 3 Complete: Docker & Security for Production Readiness
+- ✅ Dockerfile for containerized deployment
+- ✅ Environment variable configuration (removed `.env` file support for security)
+- ✅ CORS middleware removed (unified deployment eliminates cross-origin requests)
+- ✅ Non-root user in Docker container for security
+- ✅ Removed `python-dotenv` dependency
+- ✅ Production-ready deployment with secure API key handling
+
 ### Stage 1 Phase 1 Complete: Architecture Unification
 - ✅ Backend serves both API and frontend from single service
 - ✅ Static file serving via FastAPI `StaticFiles`
@@ -369,7 +468,6 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 - ✅ Special handling detection and instructions (batteries, e-waste, HHW, sharps)
 - ✅ Stub mode for testing without API calls
 - ✅ Web frontend with photo upload, results display, and clarification flow
-- ✅ CORS configuration for development scenarios
 
 ### Current Constraints
 - Only supports JPG and PNG images
@@ -483,17 +581,16 @@ To support new jurisdictions with different rules:
 ## Troubleshooting
 
 ### Frontend can't connect to backend
-- **Check API endpoint**: If running separate servers, verify the API base URL
-- **Use URL parameter override**: `http://localhost:8080?apiBase=http://localhost:8000`
-- **Check CORS**: Backend allows `localhost:8080` and `localhost:8000` by default
+- **Use unified deployment**: Run via Docker or the single uvicorn command (recommended)
+- **If using separate servers**: Verify the API base URL with `http://localhost:8080?apiBase=http://localhost:8000`
 - **Network access**: For remote access, use server IP instead of localhost
 
 ### "Vision provider error" (502)
 - **Check VISION_PROVIDER**: Should be "stub" for testing or "openai" for production
-- **Verify API key**: If using OpenAI mode, ensure `OPENAI_API_KEY` is set in `.env`
+- **Verify API key**: If using OpenAI mode, ensure `OPENAI_API_KEY` environment variable is set
 - **Check network**: OpenAI API requires internet access
 - **Review logs**: Backend console shows detailed error messages
-- **Timeout issues**: Increase `OPENAI_TIMEOUT_SECONDS` if needed
+- **Timeout issues**: Increase `OPENAI_TIMEOUT_SECONDS` environment variable if needed
 
 ### "File too large" error (413)
 - Maximum file size is 8MB
