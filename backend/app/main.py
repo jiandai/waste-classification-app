@@ -14,7 +14,8 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -32,6 +33,11 @@ ALLOWED_MIME = {"image/jpeg", "image/png"}  # Sprint 0: keep minimal
 
 app = FastAPI(title="Waste CV Prototype API", version="0.1.0")
 logger = logging.getLogger("waste_app")
+
+# Mount static files from web directory
+WEB_DIR = Path(__file__).resolve().parents[2] / "web"
+if WEB_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
 
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
@@ -106,6 +112,15 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("Unhandled exception", extra={"request_id": request_id})
     body = _error_body("Internal server error", 500, "internal_error", request_id=request_id)
     return JSONResponse(status_code=500, content=body)
+
+
+@app.get("/")
+async def root():
+    """Serve the index.html from the web directory."""
+    index_path = WEB_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    raise HTTPException(status_code=404, detail="Frontend not found")
 
 
 @app.get("/health")
