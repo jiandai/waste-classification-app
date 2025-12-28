@@ -28,7 +28,7 @@ from .rules import decide_bin_from_profile, apply_clarification
 
 
 MAX_BYTES = 8 * 1024 * 1024  # 8MB
-ALLOWED_MIME = {"image/jpeg", "image/png"}  # Sprint 0: keep minimal
+ALLOWED_MIME = {"image/jpeg", "image/png"}  # Stage 1 Phase 1: JPG/PNG support
 
 
 app = FastAPI(title="Waste CV Prototype API", version="0.1.0")
@@ -138,7 +138,7 @@ def health():
 def _normalize_image(image_bytes: bytes, mime: str) -> bytes:
     """
     Decode and re-encode to JPEG to normalize and strip EXIF by default.
-    Sprint 0 keeps this simple.
+    Stage 1 Phase 1 implementation.
     """
     try:
         with Image.open(io.BytesIO(image_bytes)) as im:
@@ -161,7 +161,7 @@ async def classify(
     request_id = getattr(request.state, "request_id", f"req_{uuid.uuid4().hex[:12]}")
 
     if image.content_type not in ALLOWED_MIME:
-        raise HTTPException(status_code=415, detail=f"Unsupported media type: {image.content_type}. Use JPG or PNG for Sprint 0.")
+        raise HTTPException(status_code=415, detail=f"Unsupported media type: {image.content_type}. Use JPG or PNG.")
 
     raw = await image.read()
     if len(raw) > MAX_BYTES:
@@ -195,7 +195,7 @@ class ClarifyRequest(BaseModel):
     request_id: str
     question_id: str
     answer: bool
-    # For Sprint 0, the frontend will send back the last top_labels it received (optional)
+    # Optional: frontend sends back the last top_labels from previous classification
     top_labels: Optional[List[LabelScore]] = None
 
 

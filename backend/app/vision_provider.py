@@ -25,10 +25,11 @@ class VisionLabels(BaseModel):
 @dataclass
 class VisionProvider:
     """
-    Adapter interface.
-    mode:
-      - "stub"  : deterministic-ish labels (Sprint 0)
-      - "openai": real OpenAI vision call
+    Adapter interface for vision AI providers.
+    
+    Modes:
+      - "stub"  : deterministic mock data for testing (Stage 1 Phase 1)
+      - "openai": real OpenAI vision API calls
     """
     mode: str = "stub"
 
