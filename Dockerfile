@@ -4,10 +4,6 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy backend requirements and install Python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
@@ -19,6 +15,7 @@ COPY backend/app /app/backend/app
 COPY web /app/web
 
 # Create a non-root user to run the application
+# Using UID 1000 which is a common default; override with docker build --build-arg if needed
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 

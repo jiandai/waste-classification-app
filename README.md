@@ -151,7 +151,8 @@ docker run -p 8000:8000 \
   -e OPENAI_MAX_RETRIES=3 \
   waste-classification-app:latest
 
-# Run with environment file (create a .env file first)
+# Run with environment file (Docker's --env-file loads env vars into container)
+# This is different from python-dotenv; the app reads from actual environment variables
 docker run -p 8000:8000 --env-file .env waste-classification-app:latest
 
 # Run in detached mode with automatic restart
