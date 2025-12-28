@@ -72,7 +72,7 @@ self.addEventListener('fetch', event => {
         
         return response;
       })
-      .catch(() => {
+      .catch(error => {
         // Network failed, try cache
         return caches.match(event.request).then(response => {
           if (response) {
@@ -82,6 +82,22 @@ self.addEventListener('fetch', event => {
           if (event.request.mode === 'navigate') {
             return caches.match('/index.html');
           }
+          // For API calls and other non-navigation requests that aren't cached,
+          // return a network error response instead of undefined
+          return new Response(
+            JSON.stringify({ 
+              error: { 
+                message: 'Network request failed and resource is not cached',
+                code: 503,
+                type: 'network_error'
+              }
+            }),
+            {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
         });
       })
   );
