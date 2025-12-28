@@ -77,13 +77,8 @@
     const override = params.get("apiBase");
     if (override) return override.replace(/\/+$/, "");
 
-    // Default to "same host as the web page, but port 8000" so LAN devices
-    // call the host machine instead of their own localhost.
-    let host = window.location.hostname || "localhost";
-    if (host.includes(":")) {
-      host = `[${host}]`;
-    }
-    return `http://${host}:8000`;
+    // Default to current origin (same host and port) for unified deployment
+    return window.location.origin;
   }
 
   const API_BASE = getApiBase();
