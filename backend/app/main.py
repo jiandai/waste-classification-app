@@ -35,6 +35,7 @@ app = FastAPI(title="Waste CV Prototype API", version="0.1.0")
 logger = logging.getLogger("waste_app")
 
 # Mount static files from web directory
+# Directory structure: backend/app/main.py -> parents[2] -> project root -> web/
 WEB_DIR = Path(__file__).resolve().parents[2] / "web"
 if WEB_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
@@ -120,7 +121,7 @@ async def root():
     index_path = WEB_DIR / "index.html"
     if index_path.exists():
         return FileResponse(index_path)
-    raise HTTPException(status_code=404, detail="Frontend not found")
+    raise HTTPException(status_code=404, detail="Frontend index.html file not found. Ensure the web directory exists at the project root.")
 
 
 @app.get("/health")
