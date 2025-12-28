@@ -56,11 +56,16 @@ self.addEventListener('fetch', event => {
         const responseToCache = response.clone();
         
         // Cache successful responses for static assets
-        if (response.status === 200 && 
-            (event.request.url.includes('.html') || 
-             event.request.url.includes('.json') || 
-             event.request.url.includes('.png') ||
-             event.request.url.includes('.svg'))) {
+        // Include navigation requests (HTML pages), root URL, and files with specific extensions
+        const url = new URL(event.request.url);
+        const isNavigation = event.request.mode === 'navigate';
+        const isRoot = url.pathname === '/' || url.pathname === '';
+        const hasExtension = event.request.url.includes('.html') || 
+                             event.request.url.includes('.json') || 
+                             event.request.url.includes('.png') ||
+                             event.request.url.includes('.svg');
+        
+        if (response.status === 200 && (isNavigation || isRoot || hasExtension)) {
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache).catch(err => {
               console.log('Cache put error:', err);
