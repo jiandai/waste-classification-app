@@ -78,9 +78,22 @@ self.addEventListener('fetch', event => {
           if (response) {
             return response;
           }
-          // If not in cache and it's a navigation request, return index.html
+          // If not in cache and it's a navigation request, try index.html
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match('/index.html').then(indexResponse => {
+              if (indexResponse) {
+                return indexResponse;
+              }
+              // If index.html is also not cached, return a fallback HTML page
+              return new Response(
+                '<!DOCTYPE html><html><head><title>Offline</title></head><body><h1>You are offline</h1><p>This page is not available offline. Please check your connection and try again.</p></body></html>',
+                {
+                  status: 503,
+                  statusText: 'Service Unavailable',
+                  headers: { 'Content-Type': 'text/html' }
+                }
+              );
+            });
           }
           // For API calls and other non-navigation requests that aren't cached,
           // return a network error response instead of undefined
