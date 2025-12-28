@@ -312,9 +312,9 @@
         body: form,
         signal: controller.signal
       });
-      clearTimeout(timeoutId);
       
       const json = await res.json();
+      clearTimeout(timeoutId);
       lastResponse = json;
 
       renderResponse(json, res.ok ? null : `HTTP ${res.status}`);
@@ -356,9 +356,9 @@
         body: JSON.stringify(payload),
         signal: controller.signal
       });
-      clearTimeout(timeoutId);
 
       const json = await res.json();
+      clearTimeout(timeoutId);
       lastResponse = json;
       renderResponse(json, res.ok ? null : `HTTP ${res.status}`);
     } catch (e) {
