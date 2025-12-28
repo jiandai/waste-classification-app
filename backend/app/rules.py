@@ -318,7 +318,8 @@ def decide_bin_from_labels(
 
 def apply_clarification(question_id: str, answer: bool, prior_top_labels: List[LabelScore]) -> Result:
     """
-    Sprint 0: simple clarification handler.
+    Stage 1 Phase 1: Simple boolean clarification handler.
+    Resolves ambiguous classifications based on user answers.
     """
     base_rationale = [RationaleItem(type="USER_INPUT", text=f"Answered {question_id} = {answer}")]
 
