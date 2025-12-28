@@ -145,6 +145,10 @@ async def service_worker():
 @app.get("/icon-{size}.png")
 async def icon(size: str):
     """Serve PWA icons."""
+    # Validate size parameter to prevent path traversal
+    if size not in ["192", "512"]:
+        raise HTTPException(status_code=404, detail="Icon size not found")
+    
     icon_path = WEB_DIR / f"icon-{size}.png"
     if icon_path.exists():
         return FileResponse(icon_path, media_type="image/png")

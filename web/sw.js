@@ -62,7 +62,11 @@ self.addEventListener('fetch', event => {
              event.request.url.includes('.png') ||
              event.request.url.includes('.svg'))) {
           caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
+            cache.put(event.request, responseToCache).catch(err => {
+              console.log('Cache put error:', err);
+            });
+          }).catch(err => {
+            console.log('Cache open error:', err);
           });
         }
         
