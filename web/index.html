@@ -167,13 +167,28 @@
       margin: 8px 0;
       line-height: 1.5;
     }
+    #installBtn {
+      display: none;
+      margin-left: auto;
+      font-size: 14px;
+      padding: 10px 16px;
+      min-width: auto;
+    }
+    header > div {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
   </style>
 </head>
 <body>
   <header>
     <div>
-      <strong>Waste Bin Classifier</strong>
-      <div class="muted">Upload a photo to get bin recommendations</div>
+      <div>
+        <strong>Waste Bin Classifier</strong>
+        <div class="muted">Upload a photo to get bin recommendations</div>
+      </div>
+      <button id="installBtn" class="primary">Install App</button>
     </div>
   </header>
 
@@ -233,10 +248,37 @@
 
   // Handle install prompt
   let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    // Show install button when prompt is available
+    installBtn.style.display = 'block';
     console.log('Install prompt available');
+  });
+  
+  // Handle install button click
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for user response
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('User response to install prompt:', outcome);
+    
+    // Clear the deferred prompt
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+  
+  // Hide install button if app is already installed
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+    console.log('PWA installed');
   });
 
   function getApiBase() {
