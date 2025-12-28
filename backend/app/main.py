@@ -31,7 +31,7 @@ MAX_BYTES = 8 * 1024 * 1024  # 8MB
 ALLOWED_MIME = {"image/jpeg", "image/png"}  # Stage 1 Phase 1: JPG/PNG support
 
 
-app = FastAPI(title="Waste CV Prototype API", version="0.1.0")
+app = FastAPI(title="Waste Classification API", version="1.0.0")
 logger = logging.getLogger("waste_app")
 
 # Mount static files from web directory
