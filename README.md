@@ -2,7 +2,7 @@
 
 An AI-powered waste classification system that uses computer vision to help users determine which bin (recycling, organics, trash, or special handling) their waste items belong to.
 
-**Status**: Stage 1 Phase 1 Complete - Core classification system operational with vision AI integration, multi-bin support, and interactive clarification.
+**Status**: Stage 1 Phase 1 Complete - Backend and frontend unified into a single deployable service for simplified deployment.
 
 ## Overview
 
@@ -10,7 +10,7 @@ This application uses OpenAI's vision API to analyze photos of waste items and p
 
 ## Features
 
-### Core Classification (Stage 1 Phase 1 - Complete)
+### Core Classification System
 - **Smart Classification**: Analyzes waste items using OpenAI vision API with structured outputs (`ItemProfile`)
 - **Multi-Bin Support**: Classifies items into:
   - BLUE (Recycling) - Clean recyclable materials (paper, cardboard, metal, glass, rigid plastic)
@@ -23,24 +23,35 @@ This application uses OpenAI's vision API to analyze photos of waste items and p
 - **Flexible Testing**: Stub mode for development/testing without API calls, OpenAI mode for production
 - **Error Handling**: Comprehensive error handling with request tracking and user-friendly error messages
 
+### Architecture (Stage 1 Phase 1 - Complete)
+- **Unified Deployment**: Backend serves both API and frontend from a single service
+- **Static File Serving**: FastAPI serves web frontend via mounted static files
+- **Single Port Access**: Application accessible on one port for simplified deployment
+- **Relative API Calls**: Frontend uses same-origin requests, eliminating CORS complexity
+- **Cloud-Ready**: Simplified architecture suitable for single-service cloud deployment
+
 ## Architecture
+
+The application uses a unified architecture where the FastAPI backend serves both the API and the web frontend.
 
 ### Backend (FastAPI)
 
 The backend is built with FastAPI and consists of several key components:
 
-- **`app/main.py`**: API endpoints for classification and clarification
+- **`app/main.py`**: API endpoints and static file serving
   - `POST /v1/classify` - Upload image and get bin recommendation
   - `POST /v1/clarify` - Answer clarification questions
   - `GET /health` - Health check endpoint
+  - `GET /` - Serves web frontend (index.html)
+  - **Static Files**: Mounts `web/` directory for frontend assets (Stage 1 Phase 1)
 
-- **`app/vision_provider.py`**: Computer vision integration (Stage 1 Phase 1)
+- **`app/vision_provider.py`**: Computer vision integration
   - OpenAI vision API integration using structured outputs (`responses.parse` with Pydantic models)
   - Stub mode for deterministic testing without API calls
   - Returns `ItemProfile` with normalized attributes: material, form factor, contamination risk, and special handling needs
   - Supports configurable timeout, retries, and base URL override
 
-- **`app/rules.py`**: Decision engine (Stage 1 Phase 1)
+- **`app/rules.py`**: Decision engine
   - Priority-based decision table operating on `ItemProfile` attributes
   - Scalable design: operates on material classes rather than specific labels
   - Handles special disposal requirements (batteries, e-waste, HHW, sharps)
@@ -48,7 +59,7 @@ The backend is built with FastAPI and consists of several key components:
   - Generates clarification questions for ambiguous cases (unknown contamination, uncertain items)
   - Applies user responses to resolve bin assignment
 
-- **`app/schemas.py`**: Pydantic data models (Stage 1 Phase 1)
+- **`app/schemas.py`**: Pydantic data models
   - `ItemProfile` - Normalized intermediate representation with material, form factor, contamination risk, special handling, and confidence
   - `ClassifyResponse` - Complete API response with result, clarification, and special handling
   - `Result` - Bin assignment with confidence, rationale, and debugging labels
@@ -58,13 +69,15 @@ The backend is built with FastAPI and consists of several key components:
 
 ### Frontend (Web) - Stage 1 Phase 1
 
-Functional vanilla HTML/CSS/JavaScript interface:
+Functional vanilla HTML/CSS/JavaScript interface served by the backend:
+- **Unified Deployment**: Served by FastAPI backend at root path `/`
+- **Same-Origin API**: Uses relative paths to call backend API (no CORS needed)
 - Photo upload with camera capture support and image preview
 - Real-time classification results with bin badges and confidence display
 - Interactive clarification flow (yes/no questions)
 - Rationale display showing classification reasoning
 - Debug view with formatted JSON responses
-- Configurable API endpoint via URL parameters for flexible deployment
+- Flexible deployment: configurable API endpoint via URL parameters for testing
 - Responsive design with clean, modern UI
 
 ## Getting Started
@@ -114,7 +127,7 @@ OPENAI_MAX_RETRIES=2
 
 ### Running the Application
 
-**Option 1: Unified Deployment (Recommended)**
+**Unified Deployment (Stage 1 Phase 1 - Recommended)**
 
 Start the backend which also serves the frontend:
 
@@ -128,9 +141,14 @@ Then open your browser to:
 http://localhost:8000
 ```
 
-The backend serves the frontend at the root path and provides API endpoints at `/v1/*`.
+The backend serves:
+- Frontend at `/` (root path)
+- API endpoints at `/v1/*`
+- Health check at `/health`
 
-**Option 2: Separate Frontend Server (Development)**
+**Alternative: Separate Frontend Server (Legacy/Development)**
+
+If you need to run frontend separately for development:
 
 1. Start the backend server:
 ```bash
@@ -151,10 +169,7 @@ http://localhost:8080
 
 **Remote/Network Access**:
 
-For testing on mobile devices or other machines on your network, replace `localhost` with your server's IP address (e.g., `http://192.168.1.100:8000`). You can also override the API endpoint via URL parameter:
-```
-http://192.168.1.100:8080?apiBase=http://192.168.1.100:8000
-```
+For testing on mobile devices or other machines on your network, replace `localhost` with your server's IP address (e.g., `http://192.168.1.100:8000`). The unified deployment makes this simpler with a single port to expose.
 
 ### Testing
 
@@ -335,9 +350,17 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
    - User responses applied via `apply_clarification()` to determine final bin
    - Maintains request context and previous labels for continuity
 
-## Current Status (Stage 1 Phase 1 - Complete)
+## Current Status
 
-### What's Working
+### Stage 1 Phase 1 Complete: Architecture Unification
+- ✅ Backend serves both API and frontend from single service
+- ✅ Static file serving via FastAPI `StaticFiles`
+- ✅ Root route (`/`) serves web frontend
+- ✅ Frontend uses same-origin API calls (no CORS complexity)
+- ✅ Single port deployment (cloud-ready)
+- ✅ Added `aiofiles` dependency for static file serving
+
+### Core Features Operational
 - ✅ FastAPI backend with full error handling and request tracking
 - ✅ OpenAI vision API integration with structured outputs (`ItemProfile`)
 - ✅ Decision engine with priority-based rules and contamination awareness
@@ -346,8 +369,7 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 - ✅ Special handling detection and instructions (batteries, e-waste, HHW, sharps)
 - ✅ Stub mode for testing without API calls
 - ✅ Web frontend with photo upload, results display, and clarification flow
-- ✅ Static file serving from unified backend
-- ✅ CORS configuration for development
+- ✅ CORS configuration for development scenarios
 
 ### Current Constraints
 - Only supports JPG and PNG images
@@ -359,8 +381,15 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 
 ## Future Enhancements (Stage 1 Phase 2 and Beyond)
 
+### Stage 1 Phase 2 Candidates
+- **Enhanced mobile support**: Progressive Web App (PWA) features
+- **Improved UI/UX**: Better mobile responsive design, animations, accessibility
+- **Performance optimizations**: Caching, image compression, lazy loading
+- **Cloud deployment**: Deploy to cloud platform (Azure, AWS, or GCP)
+
+### Future Stages
 - **Multi-jurisdiction support**: Customizable rules for different cities/regions with jurisdiction-specific bins and regulations
-- **Mobile applications**: Native iOS and Android apps with optimized camera integration
+- **Native mobile applications**: iOS and Android apps with optimized camera integration
 - **Enhanced clarification**: Multi-choice questions, image annotations, and contextual help
 - **Barcode/packaging scanning**: Direct product lookup for accurate disposal information
 - **User feedback loop**: Learn from corrections to improve accuracy over time
@@ -369,7 +398,6 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 - **Integration with local systems**: Direct connection to municipal waste management databases
 - **Offline mode**: Local classification for areas with limited connectivity
 - **Multilingual support**: Interface and instructions in multiple languages
-- **Accessibility improvements**: Voice commands, screen reader support, and simplified interfaces
 
 ## Development
 
@@ -496,23 +524,21 @@ To support new jurisdictions with different rules:
 
 ## Stage 1 Phase 1 Completion Summary
 
-This phase established the core foundation of the waste classification system:
+This phase established a unified, cloud-ready application architecture:
+
+**Goal Achieved**: Simplified the application into a single deployable unit where the backend serves both API and frontend.
 
 **Key Deliverables**:
-1. ✅ **Vision AI Integration** - OpenAI structured outputs returning normalized `ItemProfile`
-2. ✅ **Classification Engine** - Priority-based decision tables with contamination awareness
-3. ✅ **Multi-bin Support** - BLUE, GREEN, GRAY, and SPECIAL bin classifications
-4. ✅ **Clarification System** - Interactive yes/no questions for ambiguous items
-5. ✅ **Special Handling** - Safety instructions for batteries, e-waste, HHW, and sharps
-6. ✅ **Web Interface** - Functional photo upload and results display
-7. ✅ **Developer Experience** - Stub mode, error handling, request tracking, and CORS support
+1. ✅ **Static File Serving** - FastAPI backend mounts and serves `web/` directory
+2. ✅ **Root Route** - `/` endpoint serves frontend `index.html`
+3. ✅ **Unified API Access** - Frontend uses same-origin relative paths for API calls
+4. ✅ **aiofiles Dependency** - Added required library for `StaticFiles` support
+5. ✅ **Single Service Deployment** - Entire application runs on one port
+6. ✅ **Simplified CORS** - No cross-origin complexity in unified deployment
 
-**What's Next (Stage 1 Phase 2)**:
-- Enhanced clarification with multi-choice questions
-- Improved UI/UX with better mobile support
-- Performance optimizations and caching
-- Extended testing and accuracy improvements
-- Additional material types and jurisdiction support
+**Why This Matters**: Cloud platforms deploy "services." Running the entire application as a single Python service (backend + frontend) is much easier to deploy, manage, and scale than coordinating separate backend and frontend deployments.
+
+**What's Next (Stage 1 Phase 2)**: Focus will likely shift to cloud deployment, mobile optimization, or enhanced user experience features.
 
 ## License
 
