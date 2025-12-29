@@ -26,11 +26,6 @@ primary_region = "sjc"
     timeout = "5s"
     path = "/health"
 
-[mounts]
-  source = "data"
-  destination = "/data"
-  initial_size = "1GB"
-
 [[vm]]
   memory = "512mb"
   cpu_kind = "shared"
