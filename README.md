@@ -101,7 +101,9 @@ Deploy to cloud platforms that provide automatic HTTPS/SSL certificates:
 - **Render**: One-click deployment with `render.yaml` configuration
 - **Fly.io**: Global edge deployment with CLI tool
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed cloud deployment instructions including:
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed cloud deployment instructions or [QUICKSTART.md](./QUICKSTART.md) for quick reference commands.
+
+**Detailed Guide ([DEPLOYMENT.md](./DEPLOYMENT.md))**:
 - Step-by-step guides for Render and Fly.io
 - HTTPS/SSL setup (automatic on both platforms)
 - Mobile camera testing on iOS and Android
