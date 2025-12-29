@@ -2,7 +2,7 @@
 
 An AI-powered waste classification system that uses computer vision to help users determine which bin (recycling, organics, trash, or special handling) their waste items belong to.
 
-**Status**: Stage 1 Phase 3 Complete - Production-ready Docker deployment with secure environment variable configuration.
+**Status**: Stage 1 Phase 4 Complete - Cloud deployment ready with HTTPS support for mobile camera access.
 
 ## Overview
 
@@ -91,6 +91,39 @@ Functional vanilla HTML/CSS/JavaScript interface served by the backend:
 **For Local Development**:
 - Python 3.9+
 - OpenAI API key (optional, can use stub mode)
+
+### Cloud Deployment (Stage 1 Phase 4 - HTTPS & Mobile Camera Support)
+
+**For production deployment with HTTPS (required for mobile camera access):**
+
+Deploy to cloud platforms that provide automatic HTTPS/SSL certificates:
+
+- **Render**: One-click deployment with `render.yaml` configuration
+- **Fly.io**: Global edge deployment with CLI tool
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed cloud deployment instructions or [QUICKSTART.md](./QUICKSTART.md) for quick reference commands.
+
+**Detailed Guide ([DEPLOYMENT.md](./DEPLOYMENT.md))**:
+- Step-by-step guides for Render and Fly.io
+- HTTPS/SSL setup (automatic on both platforms)
+- Mobile camera testing on iOS and Android
+- Environment variable configuration
+- Troubleshooting and monitoring
+- Cost estimates and free tier options
+
+**Quick Start - Render**:
+1. Push code to GitHub
+2. Connect repository to Render
+3. Deploy with `render.yaml` (auto-detected)
+4. Get HTTPS URL instantly
+
+**Quick Start - Fly.io**:
+```bash
+flyctl launch  # Creates app with HTTPS
+flyctl deploy  # Deploy updates
+```
+
+**Why Cloud Deployment**: Modern browsers require HTTPS to access device cameras on mobile. Deploying to Render or Fly.io provides automatic SSL certificates and makes the app accessible from any mobile device.
 
 ### Docker Deployment (Stage 1 Phase 3 - Production Ready)
 
@@ -444,6 +477,16 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 
 ## Current Status
 
+### Stage 1 Phase 4 Complete: Cloud Deployment & Verification
+- ✅ Render deployment configuration (render.yaml)
+- ✅ Fly.io deployment configuration (fly.toml)
+- ✅ Comprehensive cloud deployment guide (DEPLOYMENT.md)
+- ✅ HTTPS/SSL support for mobile camera permissions
+- ✅ Environment variable configuration for both platforms
+- ✅ Health check endpoints for monitoring
+- ✅ Documentation for real-world mobile testing (iOS/Android)
+- ✅ Troubleshooting guides for common deployment issues
+
 ### Stage 1 Phase 3 Complete: Docker & Security for Production Readiness
 - ✅ Dockerfile for containerized deployment
 - ✅ Environment variable configuration (removed `.env` file support for security)
@@ -478,13 +521,15 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 - Simple web UI (no mobile app yet)
 - No user authentication or personalization
 
-## Future Enhancements (Stage 1 Phase 2 and Beyond)
+## Future Enhancements (Stage 2 and Beyond)
 
-### Stage 1 Phase 2 Candidates
-- **Enhanced mobile support**: Progressive Web App (PWA) features
+### Stage 2 Candidates
+- **Enhanced mobile support**: Progressive Web App (PWA) features (service worker already in place)
 - **Improved UI/UX**: Better mobile responsive design, animations, accessibility
 - **Performance optimizations**: Caching, image compression, lazy loading
-- **Cloud deployment**: Deploy to cloud platform (Azure, AWS, or GCP)
+- **Custom domains**: Configure custom domains on Render/Fly.io
+- **Analytics**: Track usage patterns and classification accuracy
+- **A/B testing**: Test different UI variations for better user experience
 
 ### Future Stages
 - **Multi-jurisdiction support**: Customizable rules for different cities/regions with jurisdiction-specific bins and regulations
@@ -581,6 +626,13 @@ To support new jurisdictions with different rules:
 
 ## Troubleshooting
 
+### Camera not working on mobile
+- **HTTPS required**: Camera access requires HTTPS on mobile devices
+- **Deploy to cloud**: Use Render or Fly.io for automatic HTTPS (see [DEPLOYMENT.md](./DEPLOYMENT.md))
+- **Check permissions**: Grant camera permission when browser prompts
+- **Browser compatibility**: Use Safari on iOS, Chrome on Android
+- **For local testing**: Use `localhost` which is exempt from HTTPS requirement, but this only works on the device running the server
+
 ### Frontend can't connect to backend
 - **Use unified deployment**: Run via Docker or the single uvicorn command (recommended)
 - **If using separate servers**: Verify the API base URL with `http://localhost:8080?apiBase=http://localhost:8000`
@@ -620,7 +672,26 @@ To support new jurisdictions with different rules:
 - **Static files**: Verify `web/index.html` exists relative to backend
 - **File serving**: Backend mounts static files from `web/` directory
 
-## Stage 1 Phase 1 Completion Summary
+## Stage 1 Completion Summaries
+
+### Stage 1 Phase 4: Cloud Deployment & Verification
+
+**Goal Achieved**: Deployed the app to public HTTPS URLs with mobile camera support.
+
+**Key Deliverables**:
+1. ✅ **Render Configuration** - `render.yaml` for one-click cloud deployment
+2. ✅ **Fly.io Configuration** - `fly.toml` for global edge deployment
+3. ✅ **Cloud Deployment Guide** - Comprehensive `DEPLOYMENT.md` with platform-specific instructions
+4. ✅ **HTTPS/SSL Support** - Automatic certificates on both platforms enable camera permissions
+5. ✅ **Mobile Testing Guide** - Instructions for real-world testing on iOS and Android
+6. ✅ **Environment Configuration** - Secure secrets management for both platforms
+7. ✅ **Health Checks** - Monitoring endpoints configured for production reliability
+
+**Why This Matters**: Modern mobile browsers require HTTPS to access device cameras. Cloud deployment with automatic SSL makes the app accessible from any mobile device, enabling real-world waste classification on-the-go.
+
+**What's Next (Stage 2)**: Focus on user experience enhancements, PWA features, custom domains, and analytics.
+
+### Stage 1 Phase 1: Architecture Unification
 
 This phase established a unified, cloud-ready application architecture:
 
@@ -635,8 +706,6 @@ This phase established a unified, cloud-ready application architecture:
 6. ✅ **Simplified CORS** - No cross-origin complexity in unified deployment
 
 **Why This Matters**: Cloud platforms deploy "services." Running the entire application as a single Python service (backend + frontend) is much easier to deploy, manage, and scale than coordinating separate backend and frontend deployments.
-
-**What's Next (Stage 1 Phase 2)**: Focus will likely shift to cloud deployment, mobile optimization, or enhanced user experience features.
 
 ## License
 
