@@ -2,9 +2,6 @@ from __future__ import annotations
 from pathlib import Path
 import logging
 import os
-from dotenv import load_dotenv
-ENV_PATH = Path(__file__).resolve().parents[0] / ".env"
-load_dotenv(dotenv_path=ENV_PATH, override=False)
 
 import io
 import uuid
@@ -13,7 +10,6 @@ from typing import Optional, List
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -49,16 +45,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
         return response
 
 
-# Local testing convenience (tighten later)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:8000", "http://127.0.0.1:8000", "*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-# Add request ID middleware - it will run after CORS but before route handlers,
-# ensuring request_id is available for all endpoints and exception handlers
+# Add request ID middleware
 app.add_middleware(RequestIDMiddleware)
 
 @app.on_event("startup")
