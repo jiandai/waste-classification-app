@@ -4,23 +4,9 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies, build Python packages, and clean up in a single layer
-# Build dependencies (removed after pip install):
-#   - build-essential: gcc, g++, make for compiling
-#   - pkg-config: helps find installed libraries
-#   - libcairo2-dev: Cairo graphics library development files (required by pycairo)
-# Runtime dependencies (kept):
-#   - libcairo2: Cairo graphics library (required by pycairo at runtime)
+# Copy backend requirements and install Python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        pkg-config \
-        libcairo2-dev \
-        libcairo2 \
-    && pip install --no-cache-dir -r /app/backend/requirements.txt \
-    && apt-get purge -y --auto-remove build-essential pkg-config libcairo2-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
 # Copy backend application files
 COPY backend/app /app/backend/app
