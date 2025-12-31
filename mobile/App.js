@@ -151,6 +151,7 @@ export default function App() {
   // Render home screen
   const renderHome = () => (
     <View style={styles.container}>
+      <StatusBar style="dark" />
       <View style={styles.header}>
         <Text style={styles.title}>Waste Sorter</Text>
         <Text style={styles.subtitle}>Take a photo to identify waste items</Text>
@@ -170,6 +171,7 @@ export default function App() {
   // Render loading state
   const renderLoading = () => (
     <View style={styles.container}>
+      <StatusBar style="dark" />
       <View style={styles.header}>
         <Text style={styles.title}>Waste Sorter</Text>
       </View>
@@ -188,6 +190,7 @@ export default function App() {
 
     return (
       <ScrollView style={styles.container}>
+        <StatusBar style="dark" />
         <View style={styles.header}>
           <Text style={styles.title}>Waste Sorter</Text>
         </View>
