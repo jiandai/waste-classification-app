@@ -32,9 +32,12 @@ app = FastAPI(title="Waste Classification API", version="1.0.0")
 logger = logging.getLogger("waste_app")
 
 # Configure CORS to allow mobile app requests
+# Allow all origins by default for mobile app development
+# In production, set CORS_ORIGINS env var to a comma-separated list of allowed origins
+cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for mobile app access
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
