@@ -34,7 +34,10 @@ logger = logging.getLogger("waste_app")
 # Configure CORS to allow mobile app requests
 # Allow all origins by default for mobile app development
 # In production, set CORS_ORIGINS env var to a comma-separated list of allowed origins
-cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+cors_origins_str = os.getenv("CORS_ORIGINS", "*")
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+if not cors_origins:
+    cors_origins = ["*"]  # Fallback to all origins if empty
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
