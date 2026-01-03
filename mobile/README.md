@@ -33,8 +33,15 @@ A React Native (Expo) mobile application for waste classification using AI-power
 
 1. Start the Expo development server:
    ```bash
-   npx expo start
+   npm start
    ```
+   
+   Or directly with Expo:
+   ```bash
+   npx expo start --lan
+   ```
+   
+   **Note**: The `--lan` flag ensures the development server is accessible on your local network (e.g., `exp://10.0.0.132:8081`) instead of just localhost (`exp://127.0.0.1:8081`). This is required for connecting from physical devices on the same network.
 
 2. Scan the QR code displayed in your terminal:
    - **iPhone**: Open the Camera app and point it at the QR code. Tap the notification to open in Expo Go.
@@ -100,6 +107,15 @@ const API_BASE_URL = 'https://your-backend-url.com';
 ```
 
 ## Troubleshooting
+
+### Connection Error: "Could not connect to the server"
+
+If you see an error like "Could not connect to the server" with URL `exp://127.0.0.1:8081`:
+
+- **Solution**: Ensure you're using the `--lan` flag when starting Expo
+- Run: `npm start` or `npx expo start --lan`
+- This makes the server accessible on your local network IP (e.g., `exp://10.0.0.132:8081`) instead of localhost
+- Make sure your computer and mobile device are on the same Wi-Fi network
 
 ### Camera Not Working
 
