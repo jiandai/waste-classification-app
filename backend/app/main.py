@@ -34,14 +34,18 @@ logger = logging.getLogger("waste_app")
 # Configure CORS to allow mobile app requests
 # Allow all origins by default for mobile app development
 # In production, set CORS_ORIGINS env var to a comma-separated list of allowed origins
-cors_origins_str = os.getenv("CORS_ORIGINS", "*")
+cors_origins_str = os.getenv("CORS_ORIGINS") or "*"
 cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
 if not cors_origins:
     cors_origins = ["*"]  # Fallback to all origins if empty
+
+# When using wildcard origins, credentials cannot be allowed per CORS spec
+allow_credentials = "*" not in cors_origins
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
