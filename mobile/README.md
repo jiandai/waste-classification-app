@@ -36,12 +36,27 @@ A React Native (Expo) mobile application for waste classification using AI-power
    npm start
    ```
    
-   Or directly with Expo:
+   This will start Expo with the `--host lan` flag, making the development server accessible on your local network (e.g., `exp://10.0.0.132:8081`) instead of just localhost (`exp://127.0.0.1:8081`).
+   
+   **If you're still seeing `exp://127.0.0.1:8081`**, try these solutions:
+   
+   a. **Clear the cache**:
    ```bash
-   npx expo start --lan
+   npm run start:clear
    ```
    
-   **Note**: The `--lan` flag ensures the development server is accessible on your local network (e.g., `exp://10.0.0.132:8081`) instead of just localhost (`exp://127.0.0.1:8081`). This is required for connecting from physical devices on the same network.
+   b. **Set your IP address manually** (if Expo can't detect it):
+   - Copy `.env.example` to `.env`
+   - Find your computer's IP address:
+     - **Mac/Linux**: Run `ifconfig | grep "inet " | grep -v 127.0.0.1`
+     - **Windows**: Run `ipconfig` and look for IPv4 Address
+   - Edit `.env` and set: `REACT_NATIVE_PACKAGER_HOSTNAME=YOUR_IP_ADDRESS`
+   - Restart the Expo server
+   
+   c. **Use tunnel mode** (works across any network):
+   ```bash
+   npm run start:tunnel
+   ```
 
 2. Scan the QR code displayed in your terminal:
    - **iPhone**: Open the Camera app and point it at the QR code. Tap the notification to open in Expo Go.
@@ -112,10 +127,26 @@ const API_BASE_URL = 'https://your-backend-url.com';
 
 If you see an error like "Could not connect to the server" with URL `exp://127.0.0.1:8081`:
 
-- **Solution**: Ensure you're using the `--lan` flag when starting Expo
-- Run: `npm start` or `npx expo start --lan`
-- This makes the server accessible on your local network IP (e.g., `exp://10.0.0.132:8081`) instead of localhost
-- Make sure your computer and mobile device are on the same Wi-Fi network
+1. **Clear the Expo cache and restart**:
+   ```bash
+   npm run start:clear
+   ```
+   This clears any cached configuration that might be forcing localhost.
+
+2. **Verify your network**:
+   - Make sure your computer and mobile device are on the same Wi-Fi network
+   - Check that your firewall isn't blocking port 8081
+
+3. **Use tunnel mode** (if LAN doesn't work):
+   ```bash
+   npm run start:tunnel
+   ```
+   This creates a tunnel that works across any network, though it may be slower.
+
+4. **Manually specify the connection**:
+   - In Expo Go, you can manually enter the connection URL
+   - Look for your computer's IP address in the terminal output
+   - Enter `exp://YOUR_IP:8081` in Expo Go
 
 ### Camera Not Working
 
