@@ -38,12 +38,22 @@ A React Native (Expo) mobile application for waste classification using AI-power
    
    This will start Expo with the `--host lan` flag, making the development server accessible on your local network (e.g., `exp://10.0.0.132:8081`) instead of just localhost (`exp://127.0.0.1:8081`).
    
-   **If you're still seeing `exp://127.0.0.1:8081`**, try clearing the cache:
+   **If you're still seeing `exp://127.0.0.1:8081`**, try these solutions:
+   
+   a. **Clear the cache**:
    ```bash
    npm run start:clear
    ```
    
-   **Alternative: Use tunnel mode** (works across any network):
+   b. **Set your IP address manually** (if Expo can't detect it):
+   - Copy `.env.example` to `.env`
+   - Find your computer's IP address:
+     - **Mac/Linux**: Run `ifconfig | grep "inet " | grep -v 127.0.0.1`
+     - **Windows**: Run `ipconfig` and look for IPv4 Address
+   - Edit `.env` and set: `REACT_NATIVE_PACKAGER_HOSTNAME=YOUR_IP_ADDRESS`
+   - Restart the Expo server
+   
+   c. **Use tunnel mode** (works across any network):
    ```bash
    npm run start:tunnel
    ```
