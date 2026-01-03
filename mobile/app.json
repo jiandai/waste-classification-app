@@ -34,7 +34,8 @@
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to identify waste items."
         }
-      ]
+      ],
+      "expo-asset"
     ]
   }
 }
