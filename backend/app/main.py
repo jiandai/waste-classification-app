@@ -12,6 +12,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -29,6 +30,15 @@ ALLOWED_MIME = {"image/jpeg", "image/png"}  # Stage 1 Phase 1: JPG/PNG support
 
 app = FastAPI(title="Waste Classification API", version="1.0.0")
 logger = logging.getLogger("waste_app")
+
+# Configure CORS to allow mobile app requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for mobile app access
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Mount static files from web directory
 # Directory structure: backend/app/main.py -> parents[2] -> project root -> web/
