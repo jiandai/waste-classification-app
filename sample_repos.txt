@@ -1,0 +1,8 @@
+# Sample repositories to survey
+# Format: owner/repo (one per line)
+# Lines starting with # are comments
+
+facebook/react
+microsoft/vscode
+python/cpython
+torvalds/linux
