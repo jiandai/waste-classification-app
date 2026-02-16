@@ -79,25 +79,30 @@ class GitHubAPIClient:
         try:
             open_milestones = self._make_request(f"/repos/{owner}/{repo}/milestones?state=open&per_page=100")
             all_milestones.extend(open_milestones)
-        except:
+        except Exception:
             pass
         
         # Get closed milestones
         try:
             closed_milestones = self._make_request(f"/repos/{owner}/{repo}/milestones?state=closed&per_page=100")
             all_milestones.extend(closed_milestones)
-        except:
+        except Exception:
             pass
         
         return all_milestones
     
     def get_projects(self, owner: str, repo: str) -> List[Dict]:
-        """Get all projects for a repository"""
-        # Note: Projects API requires special accept header
+        """
+        Get all projects for a repository.
+        
+        Note: This retrieves GitHub Projects Classic (the older project board feature).
+        The newer GitHub Projects (formerly Projects beta) is not currently supported
+        as it uses a different GraphQL-based API.
+        """
         endpoint = f"/repos/{owner}/{repo}/projects"
         url = f"{self.base_url}{endpoint}"
         headers = {
-            'Accept': 'application/vnd.github.inertia-preview+json',  # Projects API preview
+            'Accept': 'application/vnd.github+json',  # Stable API version
             'User-Agent': 'GitHub-Repo-Survey-Tool'
         }
         
@@ -114,11 +119,11 @@ class GitHubAPIClient:
                 # Repository might not have projects enabled
                 return []
             elif e.code == 410:
-                # Projects classic is deprecated, try new projects
+                # Projects classic may be disabled for this repository
                 return []
             else:
                 return []
-        except:
+        except Exception:
             return []
 
 

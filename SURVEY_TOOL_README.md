@@ -164,7 +164,7 @@ Each repository survey uses 2-3 API requests (one for milestones, one for projec
 ## Limitations
 
 - Surveys GitHub Projects Classic (the older project board feature)
-- Does not survey the newer GitHub Projects (beta) feature
+- Does not survey the newer GitHub Projects (introduced in 2021, generally available since 2022) which uses a GraphQL-based API
 - Limited to 100 milestones per repository (pagination not implemented)
 - Limited to 100 projects per repository (pagination not implemented)
 - Cannot access private repositories without appropriate token permissions
