@@ -101,9 +101,10 @@ https://waste-classification-app.onrender.com
 mobile/
 ├── App.js              # Main application component
 ├── app.json            # Expo configuration
+├── assets/             # Production app assets (icon, splash, etc.)
 ├── babel.config.js     # Babel configuration
 ├── package.json        # Dependencies and scripts
-└── README.md          # This file
+└── README.md           # This file
 ```
 
 ### Key Components
