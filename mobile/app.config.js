@@ -1,0 +1,44 @@
+export default {
+  expo: {
+    name: "Waste Sorter",
+    slug: "waste-sorter",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "light",
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff"
+    },
+    assetBundlePatterns: [
+      "**/*"
+    ],
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.wastesorter.app"
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#ffffff"
+      },
+      package: "com.wastesorter.app"
+    },
+    web: {
+      favicon: "./assets/favicon.png"
+    },
+    plugins: [
+      [
+        "expo-image-picker",
+        {
+          cameraPermission: "Allow $(PRODUCT_NAME) to access your camera to identify waste items."
+        }
+      ],
+      "expo-asset"
+    ],
+    extra: {
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://waste-classification-app.onrender.com"
+    }
+  }
+};

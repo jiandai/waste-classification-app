@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
 
-const API_BASE_URL = 'https://waste-classification-app.onrender.com';
+const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'https://waste-classification-app.onrender.com';
 
 // Bin color mappings
 const BIN_COLORS = {
