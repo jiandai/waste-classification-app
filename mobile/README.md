@@ -83,10 +83,36 @@ A React Native (Expo) mobile application for waste classification using AI-power
 
 ## API Integration
 
-The app connects to the hosted backend at:
+The app connects to the backend API. By default, it uses:
 ```
 https://waste-classification-app.onrender.com
 ```
+
+### Configuring the API URL
+
+The API URL can be configured via environment variables, making it easy to point to different backends for development, staging, and production:
+
+1. **Create a `.env` file** (if it doesn't exist):
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Set the API URL** in your `.env` file:
+   ```bash
+   EXPO_PUBLIC_API_URL=https://your-backend-url.com
+   ```
+
+3. **Restart the Expo development server** for changes to take effect:
+   ```bash
+   npm start
+   ```
+
+**Examples:**
+- Local development: `EXPO_PUBLIC_API_URL=http://192.168.1.100:8000`
+- Staging: `EXPO_PUBLIC_API_URL=https://staging-api.example.com`
+- Production: `EXPO_PUBLIC_API_URL=https://waste-classification-app.onrender.com` (default)
+
+**Note:** If `EXPO_PUBLIC_API_URL` is not set, the app defaults to the production URL.
 
 ### Endpoints Used
 
@@ -95,12 +121,11 @@ https://waste-classification-app.onrender.com
 
 ## Development
 
-### Project Structure
-
 ```
 mobile/
 ├── App.js              # Main application component
-├── app.json            # Expo configuration
+├── app.config.js       # Expo configuration (supports env vars)
+├── .env.example        # Environment variable template
 ├── assets/             # Production app assets (icon, splash, etc.)
 ├── babel.config.js     # Babel configuration
 ├── package.json        # Dependencies and scripts
@@ -111,16 +136,9 @@ mobile/
 
 - **Camera Integration**: Uses `expo-image-picker` for camera access
 - **API Client**: Fetch API with FormData for image uploads
+- **Configuration**: Environment-based API URL configuration via `expo-constants`
 - **State Management**: React hooks (useState) for app state
 - **UI Components**: React Native core components (View, Text, TouchableOpacity, etc.)
-
-### Modifying the API URL
-
-To use a different backend, edit the `API_BASE_URL` constant in `App.js`:
-
-```javascript
-const API_BASE_URL = 'https://your-backend-url.com';
-```
 
 ## Troubleshooting
 
@@ -172,6 +190,39 @@ If you see an error like "Could not connect to the server" with URL `exp://127.0
 - Run `npm install` again to ensure all dependencies are installed
 - Clear the Expo cache: `npx expo start -c`
 - Check that you're using compatible versions of Node.js and npm
+
+### EAS Build Configuration (Production/Preview)
+
+For production builds using EAS (Expo Application Services), you can configure different API URLs for different build profiles:
+
+1. **Create or update `eas.json`**:
+   ```json
+   {
+     "build": {
+       "production": {
+         "env": {
+           "EXPO_PUBLIC_API_URL": "https://waste-classification-app.onrender.com"
+         }
+       },
+       "preview": {
+         "env": {
+           "EXPO_PUBLIC_API_URL": "https://staging-api.example.com"
+         }
+       }
+     }
+   }
+   ```
+
+2. **Build with a specific profile**:
+   ```bash
+   # Production build with production API
+   eas build --platform ios --profile production
+   
+   # Preview build with staging API
+   eas build --platform ios --profile preview
+   ```
+
+This approach ensures production builds always point to the correct backend without code changes.
 
 ## Building for Production
 
