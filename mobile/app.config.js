@@ -38,7 +38,10 @@ export default {
       "expo-asset"
     ],
     extra: {
-      apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://waste-classification-app.onrender.com"
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || "https://waste-classification-app.onrender.com",
+      eas: {
+        "projectId": "ada8fc9e-9b95-438c-8161-73f9bbd5d560"
+      }
     }
   }
 };
