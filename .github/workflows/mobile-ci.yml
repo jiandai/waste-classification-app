@@ -1,0 +1,64 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: mobile/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd mobile
+        npm ci
+    
+    - name: Check for lint scripts
+      id: check-lint
+      run: |
+        cd mobile
+        if grep -q '"lint"' package.json; then
+          echo "has_lint=true" >> $GITHUB_OUTPUT
+        else
+          echo "has_lint=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Run linter
+      if: steps.check-lint.outputs.has_lint == 'true'
+      run: |
+        cd mobile
+        npm run lint
+      continue-on-error: true
+    
+    - name: Check Expo config
+      run: |
+        cd mobile
+        npx expo config --json > /dev/null || exit 1
+    
+    - name: Type check (if TypeScript)
+      run: |
+        cd mobile
+        if [ -f "tsconfig.json" ]; then
+          npx tsc --noEmit
+        else
+          echo "No TypeScript configuration found, skipping type check"
+        fi
+      continue-on-error: true
