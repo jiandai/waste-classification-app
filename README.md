@@ -4,6 +4,8 @@ An AI-powered waste classification system that uses computer vision to help user
 
 **Status**: Stage 1 Phase 4 Complete - Cloud deployment ready with HTTPS support for mobile camera access.
 
+[![CI](https://github.com/jiandai/waste-classification-app/workflows/CI/badge.svg)](https://github.com/jiandai/waste-classification-app/actions/workflows/ci.yml)
+
 ## Overview
 
 This application uses OpenAI's vision API to analyze photos of waste items and provide bin recommendations based on material type, form factor, contamination risk, and jurisdiction-specific rules. It features an interactive clarification system for ambiguous items and special handling instructions for hazardous materials.
@@ -545,10 +547,39 @@ The system uses a structured, scalable approach completed in Stage 1 Phase 1:
 
 ## Development
 
+### Continuous Integration
+
+The project uses GitHub Actions for continuous integration and testing:
+
+- **Backend Tests**: 22 passing tests covering API endpoints and classification rules
+- **Docker Build**: Validates Docker image builds and health checks
+- **Mobile Checks**: Validates Expo configuration
+
+See [`.github/workflows/README.md`](.github/workflows/README.md) for detailed CI/CD documentation.
+
+**Running tests locally**:
+```bash
+cd backend
+pip install -r requirements.txt
+pip install pytest pytest-asyncio httpx ruff
+
+# Run tests
+VISION_PROVIDER=stub pytest -v
+
+# Run linter
+ruff check .
+```
+
 ### Project Structure
 
 ```
 waste-classification-app/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml               # Main CI workflow
+│       ├── backend-ci.yml       # Backend-specific CI
+│       ├── mobile-ci.yml        # Mobile-specific CI
+│       └── README.md            # CI/CD documentation
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
@@ -556,9 +587,17 @@ waste-classification-app/
 │   │   ├── rules.py             # Classification rules
 │   │   ├── schemas.py           # Data models
 │   │   └── vision_provider.py  # Vision AI integration
-│   └── requirements.txt
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_main.py         # API endpoint tests
+│   │   └── test_rules.py        # Classification rules tests
+│   ├── requirements.txt
+│   └── pyproject.toml           # pytest and ruff config
 ├── web/
 │   └── index.html              # Frontend interface
+├── mobile/                     # React Native mobile app
+├── Dockerfile                  # Container configuration
+├── render.yaml                 # Render deployment config
 ├── .gitignore
 └── README.md
 ```
