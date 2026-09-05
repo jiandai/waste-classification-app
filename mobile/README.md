@@ -191,6 +191,11 @@ If you see an error like "Could not connect to the server" with URL `exp://127.0
 - Clear the Expo cache: `npx expo start -c`
 - Check that you're using compatible versions of Node.js and npm
 
+### "Waste Sorter Beta Has Expired"
+
+The TestFlight build passed its 90-day expiry. Nothing is broken — a new build has to be
+uploaded. See [TestFlight Builds Expire After 90 Days](#testflight-builds-expire-after-90-days).
+
 ### EAS Build Configuration (Production/Preview)
 
 For production builds using EAS (Expo Application Services), you can configure different API URLs for different build profiles:
@@ -248,6 +253,60 @@ To build standalone apps for iOS and Android:
    ```
 
 For detailed build instructions, see the [Expo documentation](https://docs.expo.dev/build/setup/).
+
+## TestFlight Builds Expire After 90 Days
+
+If the app on your iPhone shows **"Waste Sorter Beta Has Expired"**, nothing is broken.
+Every TestFlight build stops launching 90 days after it is uploaded to App Store Connect.
+There is no way to extend or reactivate an expired build — the only fix is to upload a new one.
+
+Expect this roughly quarterly for as long as the app is distributed through TestFlight.
+
+### Reactivating
+
+Run both commands from the `mobile/` directory:
+
+```bash
+eas build --platform ios --profile production
+eas submit --platform ios --latest
+```
+
+- `--latest` submits the build you just made, so there is no build ID to copy.
+- `eas submit` defaults to the `production` submit profile, so `--profile` can be omitted.
+- Both commands need interactive Apple authentication (Apple ID + 2FA), so they must be
+  run locally — they cannot be automated without stored credentials.
+
+Then, on the iPhone:
+
+1. Wait ~5-30 minutes for App Store Connect to finish processing the build.
+2. Delete the expired app icon from the home screen — it stays dead.
+3. Open TestFlight and install Waste Sorter again.
+
+Internal testers (your own team, up to 100) get the build with **no App Review**.
+External testers require a Beta App Review round for the first build of a version.
+
+### Before rebuilding, check the backend
+
+The build bakes in the API URL (`EXPO_PUBLIC_API_URL`, defaulting to the Render
+deployment). Render free-tier services sleep when idle and can be suspended after long
+inactivity, so confirm the backend is alive first — otherwise you rebuild into an app
+that fails on every classification:
+
+```bash
+curl -i https://waste-classification-app.onrender.com/health
+```
+
+Expect `200`. Allow 30-60 seconds for a cold start. A connection failure means the
+Render service needs redeploying (see `DEPLOYMENT.md`) before the rebuild is worthwhile.
+
+### Notes on the other build profiles
+
+- **`--profile preview` will not install on a phone.** It sets `ios.simulator: true`,
+  which produces a `.app` for the Xcode simulator only.
+- **Ad-hoc internal distribution** (a `distribution: "internal"` profile without the
+  simulator flag, plus `eas device:create` to register device UDIDs) lasts about a year
+  instead of 90 days, but is capped at 100 registered devices per membership year.
+- **A full App Store release** removes the expiry entirely, at the cost of App Review.
 
 ## Technology Stack
 
