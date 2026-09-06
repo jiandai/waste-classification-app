@@ -559,9 +559,17 @@ waste-classification-app/
 │   └── requirements.txt
 ├── web/
 │   └── index.html              # Frontend interface
+├── survey_repos_github.py       # GitHub repository survey tool
+├── SURVEY_TOOL_README.md        # Survey tool documentation
 ├── .gitignore
 └── README.md
 ```
+
+### GitHub Repository Survey Tool
+
+A utility tool is included to survey GitHub repositories and identify which ones use Milestones and/or Projects for project management. This can be useful for auditing project management practices across multiple repositories.
+
+See [SURVEY_TOOL_README.md](./SURVEY_TOOL_README.md) for detailed usage instructions.
 
 ### Adding New Rules
 
